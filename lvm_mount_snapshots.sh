@@ -127,7 +127,6 @@ check_requirements $REQUIREMENTS
 
 mode=$1
 target=$2
-volume_target="${volume_group}/${2}"
 snapshot_name="${SNAPSHOT_PREFIX}${target}"
 snapshot_mount_name="${volume_group}-${snapshot_name}"
 snapshot_mount_device="/dev/mapper/${snapshot_mount_name}"
@@ -141,9 +140,9 @@ case $mode in
                 exit 2
             fi
             is_mounted $snapshot_mount_target && unmount_snapshot $snapshot_mount_target
-            volume=$(find_volume $volume_target $volume_group)
+            volume=$(find_volume $target $volume_group)
             if [[ -z $volume ]]; then
-                echo "ERROR: failed to find volume ${volume_target}"
+                echo "ERROR: failed to find volume ${volume_group}/${target}"
                 exit $ret
             fi
             make_snapshot $volume $snapshot_name $SNAPSHOT_SIZE
