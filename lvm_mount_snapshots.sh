@@ -7,6 +7,9 @@ SNAPSHOT_PREFIX='snap_'
 DEFAULT_VOLUME_GROUP='vg00'
 REQUIREMENTS="/sbin/lvremove /sbin/lvcreate /sbin/lvs"
 
+# check for waitmax binary
+WAITMAX_BINARY="$(which waitmax)"
+
 get_volumes(){
     LVS=$(/sbin/lvs --separator / --noheadings -o vg_name,lv_name 2>&- | tr -d ' ') || true
     echo $LVS
@@ -40,8 +43,12 @@ make_snapshot(){
     test -z $volume && return 1
     test -z $name && return 1
     test -z $size && return 1
+    if [ -x $WAITMAX_BINARY ];then
+        # Wait 300 seconds to create snapshot or kill create command
+        WAITMAX_COMMAND="${WAITMAX_BINARY} -s9 300"
+    fi
     echo "INFO: LVM creating $name for $volume"
-    /sbin/lvcreate -n $name --extents "${size}" -s $volume
+    $WAITMAX_COMMAND /sbin/lvcreate -n $name --extents "${size}" -s $volume <<<y
 }
 
 remove_snapshot(){
